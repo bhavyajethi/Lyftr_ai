@@ -1,0 +1,14 @@
+# Ignore dependency folders
+venv
+.venv
+__pycache__
+app/__pycache__
+tests/__pycache__
+
+# Ignore git history
+.git
+
+# Ignore local tool configs (as you requested to exclude these)
+.python-version
+uv.lock
+pyproject.toml

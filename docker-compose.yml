@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: lyftr_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # This maps your local file to the container's /app folder
+      - ./app.db:/app/app.db
+    environment:
+      - WEBHOOK_SECRET=mysecretkey
+      # FIX IS HERE: Changed /data/ to /app/ to match the volume above
+      - DATABASE_URL=sqlite:////app/app.db
+      - LOG_LEVEL=INFO
+    restart: always

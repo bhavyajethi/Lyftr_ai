@@ -1,0 +1,15 @@
+# --- Dependencies (Exclude these) ---
+venv/
+.venv/
+__pycache__/
+app/__pycache__/
+tests/__pycache__/
+
+# --- Local Tool Configs (Exclude these as requested) ---
+.python-version
+uv.lock
+pyproject.toml
+
+# --- Git junk ---
+.git
+.DS_Store
