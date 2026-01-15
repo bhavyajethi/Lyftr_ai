@@ -70,9 +70,9 @@ Service base URL:
 
 Example:
 
-DATABASE_URL=sqlite:////data/app.db
-WEBHOOK_SECRET=testsecret
-LOG_LEVEL=INFO
+- DATABASE_URL=sqlite:////data/app.db
+- WEBHOOK_SECRET=testsecret
+- LOG_LEVEL=INFO
 
 ## Endpoints
 
@@ -102,6 +102,7 @@ Query params:
 
 Retrieve stored messages with filtering.
 - Params: limit, offset, from, since, q (search text).
+
 
 ### 3) GET /stats
 
@@ -142,12 +143,12 @@ pip install -r requirements.txt
 3) Run:
 
 ```sh
-uvicorn app.main:app --reload --env-file .env
+uvicorn app.main:app --port 8000 --env-file .env
 ```
 
 Open:
 
-- `Access: http://127.0.0.1:8000`
+- `Access: http://localhost:8000/docs`
 
 Notes:
 
@@ -177,5 +178,3 @@ Logs are one JSON object per line (good for `jq`), including:
 ### Metrics
 
 Exposes a minimal Prometheus-style text endpoint at `/metrics`.
-
-
