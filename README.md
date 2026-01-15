@@ -1,194 +1,180 @@
-# 📦 Containerized Webhook API
+# Containerized Webhook API
+![alt text]({4C7CEE95-2A34-4C96-9B72-162FAA033630}.png)
+## Setup Used
 
-A production-style, Dockerized **FastAPI** service that securely ingests webhooks, stores them exactly once in **SQLite**, and exposes analytics, metrics, and health probes.  
-Designed to meet real-world backend evaluation standards with idempotency, HMAC verification, structured logs, and Prometheus-style metrics.
+VSCode + Cursor + Windsurf 
 
----
+## Project structure
 
-## 🧱 Features
+```
+/app
+  main.py          # FastAPI app, middleware, routes
+  models.py        # Pydantic models + validation
+  storage.py       # SQLite schema + DB operations
+  logging_utils.py # JSON logging helpers
+  metrics.py       # Minimal Prometheus-style metrics
+  config.py        # Environment config loading
+/tests
+  test_webhook.py
+  test_messages.py
+  test_stats.py
+app.db
+Dockerfile
+docker-compose.yml
+Makefile
+requirements.txt
+README.md
+.env
+```
 
-- 🔐 **HMAC-SHA256 Signature Verification** for all incoming webhooks  
-- 🧮 **Exactly-once ingestion (Idempotency)** via unique `message_id`  
-- 📊 **Analytics Endpoint** (`/stats`)  
-- 📄 **Paginated & Filterable Listing** (`/messages`)  
-- 📈 **Prometheus Metrics** (`/metrics`)  
-- 🩺 **Health Checks** (`/health/live`, `/health/ready`)  
-- 🧾 **Structured JSON Logging**  
-- 🐳 **Fully Containerized with Docker Compose**
+## Requirements
 
----
+- Docker Desktop (recommended for evaluation / production-style run)
+- Python (for local runs and signature helper snippets)
 
-## 📂 Project Structure
+## Configuration (12-factor)
 
-```text
-/
-├── app/
-│   ├── main.py          # FastAPI app, middleware, routes, & Pydantic models
-│   ├── storage.py       # SQLite connection & initialization
-│   ├── logging_utils.py # JSON logging helpers
-│   ├── metrics.py       # Minimal Prometheus-style metrics
-│   └── config.py        # Environment config loading
-├── tests/
-│   ├── test_webhook.py
-│   ├── test_messages.py
-│   └── test_stats.py
-├── app.db              
-├── Dockerfile          
-├── docker-compose.yml   
-├── Makefile            
-├── requirements.txt     
-└── .env
+The service is configured only via environment variables:
 
-⚙️ Environment Configuration (MANDATORY)
+- `WEBHOOK_SECRET` (required for readiness)
+- `DATABASE_URL` (required)
+- `LOG_LEVEL` (optional, default `INFO`)
 
-Create a .env file in the project root with the following:
+Recommended `.env` for Docker:
 
-WEBHOOK_SECRET=mysecretkey
+```env
+WEBHOOK_SECRET=testsecret
 DATABASE_URL=sqlite:////app/app.db
 LOG_LEVEL=INFO
+```
 
+Notes:
 
-⚠️ Important
+- `DATABASE_URL=sqlite:////app/app.db` is a Docker path (volume-mounted).
 
-WEBHOOK_SECRET must be set. If missing, /health/ready will fail.
+## How to run (Docker Compose)
 
-DATABASE_URL points to the SQLite file inside the container.
+- Start: `docker compose up --build`
+- Check Health: `http://localhost:8000/health/ready`
+- Stop the Service: `Ctrl+c`
 
-🚀 Quick Start (Docker)
-1️⃣ Build & Run
-docker compose up --build
+Service base URL:
 
-2️⃣ Access
+- `http://localhost:8000`
+- Swagger UI: `http://localhost:8000/docs`
 
-API Base: http://localhost:8000
+## Environment variables
 
-Swagger UI: http://localhost:8000/docs
+- DATABASE_URL
+- WEBHOOK_SECRET
+- LOG_LEVEL
 
-3️⃣ Stop
-Ctrl + C
+Example:
 
-🧪 Testing
-▶ Automated Unit Tests
-python -m unittest discover tests
+DATABASE_URL=sqlite:////data/app.db
+WEBHOOK_SECRET=testsecret
+LOG_LEVEL=INFO
 
-🔗 API Usage
-🔐 1. Ingest Webhook
+## Endpoints
 
-POST /webhook
+- POST /webhook
+- GET /messages
+- GET /stats
+- GET /metrics
+- GET /health/live
+- GET /health/ready
 
-Requires HMAC-SHA256 signature of the raw JSON body in X-Signature.
+## API Endpoints (PowerShell examples)
 
-➕ Generate Signature (Python One-liner)
-python -c "import hmac, hashlib; print(hmac.new(b'mysecretkey', b'{\"message_id\":\"m1\",\"from\":\"+123\",\"to\":\"+456\",\"ts\":\"2025-01-01T10:00:00Z\",\"text\":\"Hello\"}', hashlib.sha256).hexdigest())"
+### 1) POST /webhook
 
-➕ Send Request
-curl -X POST "http://localhost:8000/webhook" \
-  -H "Content-Type: application/json" \
-  -H "X-Signature: <PASTE_SIGNATURE_HERE>" \
-  -d '{"message_id":"m1","from":"+123","to":"+456","ts":"2025-01-01T10:00:00Z","text":"Hello"}'
+Request body example: JSON (message_id, from, to, ts, text)
+Behavior: Idempotent (ignores duplicates without error).
 
-✅ Success
-{"status":"ok"}
+### 2) GET /messages
 
-❌ Invalid Signature
-{"detail":"invalid signature"}
+Query params:
 
-📄 2. List Messages
+- `limit` (default 50, min 1, max 100)
+- `offset` (default 0, min 0)
+- `from` 
+- `since` 
+- `q` ('search text`)
 
-GET /messages
+Retrieve stored messages with filtering.
+- Params: limit, offset, from, since, q (search text).
 
-Supports pagination and filters.
+### 3) GET /stats
 
-Query Params
-Param	Description
-limit	Default 50, Max 100
-offset	Default 0
-from	Filter by sender
-since	ISO-8601 timestamp
-q	Search in text
-Example
-curl "http://localhost:8000/messages?limit=10&from=+123"
-
-📊 3. Statistics
-
-GET /stats
 
 Returns:
 
-total_messages
+- `total_messages`
+- `unique_senders`
+- `top 10 senders`
+- `timestamp_range`
 
-senders_count
+### 4) GET /metrics
 
-messages_per_sender
+```powershell
+curl.exe -s "http://localhost:8000/metrics"
+```
+Return:
+- `Prometheus format metrics`
 
-first_message_ts
+## How to run locally (no Docker)
 
-last_message_ts
+This is useful if you want to test visually in the browser.
 
-curl "http://localhost:8000/stats"
+1) Create `.env`:
 
-📈 4. Metrics (Prometheus)
+```env
+WEBHOOK_SECRET=mysecretkey
+DATABASE_URL=sqlite:///./local.db
+LOG_LEVEL=INFO
+```
 
-GET /metrics
+2) Install deps:
 
-curl "http://localhost:8000/metrics"
-
-
-Includes:
-
-http_requests_total{path,status}
-
-webhook_requests_total{result}
-
-Latency buckets
-
-🩺 5. Health Checks
-curl http://localhost:8000/health/live
-curl http://localhost:8000/health/ready
-
-Endpoint	Behavior
-/health/live	Always 200 if app is running
-/health/ready	200 only if DB reachable & WEBHOOK_SECRET set
-⚙️ Design & Architecture
-🗄 Persistence
-
-SQLite database.
-
-File-based DB (app.db) mounted into the container.
-
-Data persists across restarts.
-
-🔁 Idempotency
-
-message_id is PRIMARY KEY.
-
-Duplicate webhooks:
-
-Not inserted again.
-
-Still return 200 OK.
-
-🔐 Security
-
-HMAC validation:
-
-HMAC-SHA256(secret=WEBHOOK_SECRET, message=<raw request body bytes>)
-
-
-Invalid/missing signature → 401 Unauthorized.
-
-📜 Observability
-
-Structured JSON logs:
-ts, level, request_id, path, status, latency_ms
-Prometheus metrics at /metrics.
-
-🛠 Local Development (WITHOUT Docker)
-1️⃣ Install Dependencies
+```sh
 pip install -r requirements.txt
+```
 
-2️⃣ Update .env for Local Path
-DATABASE_URL=sqlite:///./app.db
+3) Run:
 
-3️⃣ Run Server
-uvicorn app.main:app --reload
+```sh
+uvicorn app.main:app --reload --env-file .env
+```
+
+Open:
+
+- `Access: http://127.0.0.1:8000`
+
+Notes:
+
+- If Docker is running on port 8000, use a different port for local runs (like 8001), or stop Docker first.
+
+## Logging
+
+Logs are one JSON object per line (good for `jq`), including:
+
+- `ts` 
+- `level`
+- `info`
+- `request_id` 
+- `method`, `path`, `status`, `latency_ms`
+
+## Design decisions
+
+### HMAC verification
+
+- Computes `HMAC_SHA256(WEBHOOK_SECRET, raw_request_body_bytes)`.
+
+### Exactly-once ingest / idempotency
+
+- SQLite enforces uniqueness with `PRIMARY KEY (message_id)`.
+- Duplicate inserts are handled gracefully (no stack traces) and still return `200 {"status":"ok"}`.
+
+### Metrics
+
+Exposes a minimal Prometheus-style text endpoint at `/metrics`.
