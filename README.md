@@ -42,7 +42,7 @@ The service is configured only via environment variables:
 Recommended `.env` for Docker:
 
 ```env
-WEBHOOK_SECRET=testsecret
+WEBHOOK_SECRET=mysecretkey
 DATABASE_URL=sqlite:////app/app.db
 LOG_LEVEL=INFO
 ```
@@ -177,4 +177,5 @@ Logs are one JSON object per line (good for `jq`), including:
 ### Metrics
 
 Exposes a minimal Prometheus-style text endpoint at `/metrics`.
+
 
