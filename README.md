@@ -17,6 +17,8 @@ VSCode + Gemini
   test_webhook.py
   test_messages.py
   test_stats.py
+.gitignore
+.dockerignore
 app.db
 Dockerfile
 docker-compose.yml
