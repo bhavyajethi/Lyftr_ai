@@ -59,8 +59,10 @@ Notes:
 
 Service base URL:
 
-- `http://localhost:8000`
 - Swagger UI: `http://localhost:8000/docs`
+
+To run the unit tests against the container:
+- Run unittest: `python -m unittest discover tests`
 
 ## Environment variables
 
@@ -117,7 +119,7 @@ Returns:
 ### 4) GET /metrics
 
 ```powershell
-curl.exe -s "http://localhost:8000/metrics"
+"http://localhost:8000/metrics"
 ```
 Return:
 - `Prometheus format metrics`
@@ -178,3 +180,4 @@ Logs are one JSON object per line (good for `jq`), including:
 ### Metrics
 
 Exposes a minimal Prometheus-style text endpoint at `/metrics`.
+
