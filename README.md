@@ -1,8 +1,7 @@
 # Containerized Webhook API
-![alt text]({4C7CEE95-2A34-4C96-9B72-162FAA033630}.png)
 ## Setup Used
 
-VSCode + Cursor + Windsurf 
+VSCode + Gemini
 
 ## Project structure
 
@@ -178,3 +177,4 @@ Logs are one JSON object per line (good for `jq`), including:
 ### Metrics
 
 Exposes a minimal Prometheus-style text endpoint at `/metrics`.
+
