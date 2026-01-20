@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: lyftr-webhook-api
+    env: python
+    plan: free # Note: Disks require a paid plan; otherwise, data clears on restart
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: lyftr_data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////data/app.db # Points to the persistent disk
+      - key: WEBHOOK_SECRET
+        generateValue: true
